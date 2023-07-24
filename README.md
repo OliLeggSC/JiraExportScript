@@ -5,13 +5,15 @@ Install python3
 ```sh
 brew install python3
 ```
+
+Installing dependencies
 ```sh
 python3 -m pip install python-dotenv pandas requests
 touch .env
 ```
+
 Populate your .env
 ```sh
-# Populate .env:
 SERVER="https://<<CompanyName>>.atlassian.net/"
 PROJECT_KEY="ProjectName"
 USERNAME="xyz@ikj.com"
