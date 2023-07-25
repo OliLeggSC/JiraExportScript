@@ -19,7 +19,7 @@ def load_credentials():
 
 def get_issues(credentials, start_at=0, max_results=100):
     response = requests.get(
-        f"{credentials['server']}/rest/api/2/search?jql=project={credentials['project_key']}&fields=comment&maxResults={max_results}&startAt={start_at}",
+        f"{credentials['server']}/rest/api/2/search?jql=project={credentials['project_key']}&fields=comment,summary,description,status,created&maxResults={max_results}&startAt={start_at}",
         auth=(credentials['username'], credentials['password'])
     )
     response.raise_for_status()
@@ -37,6 +37,15 @@ def get_public_comments_from_issue(issue):
             public_comments.append(comment_info)
     return comment_line.join(public_comments)
 
+def get_data_from_issue(issue):
+    ticket = issue['key']
+    summary = issue['fields']['summary']
+    description = issue['fields']['description']
+    status = issue['fields']['status']['name']
+    created = issue['fields']['created']
+    public_comments = get_public_comments_from_issue(issue)
+    return {"Ticket": ticket, "Summary": summary, "Description": description, "Status": status, "Created": created, "Public Comments": public_comments}
+
 def main():
     credentials = load_credentials()
     df = pd.DataFrame(columns=["Ticket", "Public Comments"])
@@ -46,9 +55,8 @@ def main():
         if not issues:
             break
         for issue in issues:
-            public_comments = get_public_comments_from_issue(issue)
-            new_df = pd.DataFrame({"Ticket": [issue["key"]], "Public Comments": [public_comments]})
-            df = pd.concat([df, new_df], ignore_index=True)
+            data = get_data_from_issue(issue)
+            df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
         start_at += 100
     df.to_csv(f"{credentials['project_key']}-Export-{datetime.today().strftime('%Y-%m-%d')}.csv", index=False)
 
