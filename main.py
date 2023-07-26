@@ -75,26 +75,21 @@ def download_attachments(issue_key, attachments, private_files):
     make_dir("attachments")
     for attachment in attachments:
         if attachment["filename"] not in private_files:
+            file_path = os.path.join("attachments", issue_key, attachment["filename"])
+            if os.path.exists(file_path):
+                print(f"Skipping {file_path}, already downloaded.")
+                continue
+
             response = jira_http_get(attachment["content"], stream=True)
             try:
                 response.raise_for_status()
                 make_dir(os.path.join("attachments", issue_key))
-                with open(
-                    os.path.join(
-                        "attachments",
-                        issue_key,
-                        attachment["filename"],
-                    ),
-                    "wb",
-                ) as file:
+                with open(file_path, "wb") as file:
                     for chunk in response.iter_content(chunk_size=8192):
                         file.write(chunk)
             except Exception as e:
-                with open(
-                    os.path.join("attachments", "failed-downloads.txt"), "a"
-                ) as file:
+                with open(os.path.join("attachments", "failed-downloads.txt"), "a") as file:
                     file.write(f"Failed {issue_key} {attachment['filename']}: {e}\n")
-
 
 def get_data_from_issue(issue):
     ticket = issue["key"]
