@@ -88,8 +88,11 @@ def download_attachments(issue_key, attachments, private_files):
                     for chunk in response.iter_content(chunk_size=8192):
                         file.write(chunk)
             except Exception as e:
-                with open(os.path.join("attachments", "failed-downloads.txt"), "a") as file:
+                with open(
+                    os.path.join("attachments", "failed-downloads.txt"), "a"
+                ) as file:
                     file.write(f"Failed {issue_key} {attachment['filename']}: {e}\n")
+
 
 def get_data_from_issue(issue):
     ticket = issue["key"]
